@@ -17,21 +17,21 @@ public class ListFile {
         this.folder = folder;
     }
 
-    public List<File> getListFile() {
-        if (folder.isFile()){
-            return Arrays.asList(folder);
-        }
-        BlockingQueue<File> fileQueue = new LinkedBlockingQueue<>();
-        Collections.addAll(fileQueue, folder.listFiles());
-        List<File> files = new ArrayList<>();
-        File file = null;
-        while ((file = fileQueue.poll()) != null){
-            if (file.isDirectory()){
-                fileQueue.addAll(Arrays.asList(file.listFiles()));
-                continue;
+    public synchronized List<File> getListFile() {
+            if (folder.isFile()){
+                return Arrays.asList(folder);
             }
-            files.add(file);
-        }
-        return files;
+            BlockingQueue<File> fileQueue = new LinkedBlockingQueue<>();
+            Collections.addAll(fileQueue, folder.listFiles());
+            List<File> files = new ArrayList<>();
+            File file = null;
+            while ((file = fileQueue.poll()) != null){
+                if (file.isDirectory()){
+                    fileQueue.addAll(Arrays.asList(file.listFiles()));
+                    continue;
+                }
+                files.add(file);
+            }
+            return files;
     }
 }

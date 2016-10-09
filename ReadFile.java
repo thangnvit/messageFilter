@@ -20,7 +20,7 @@ public class ReadFile extends Thread {
     }
 
     @Override
-    public synchronized void run() {
+    public void run() {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(fileInput));
             String line;
