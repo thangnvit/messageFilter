@@ -20,12 +20,12 @@ public class ReadFile extends Thread {
     }
 
     @Override
-    public void run() {
+    public synchronized void run() {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(fileInput));
-            String s;
-            while ((s = reader.readLine()) != null) {
-                queueRead.put(s);
+            String line;
+            while ((line = reader.readLine()) != null) {
+                queueRead.put(line);
             }
             queueRead.put("Exit");
             reader.close();

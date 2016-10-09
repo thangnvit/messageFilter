@@ -1,10 +1,5 @@
 import java.io.*;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -14,36 +9,48 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class Main {
 
     public static void main(String[] args) throws IOException {
+        File folder = new File("C:\\Program Files\\Adobe");
 
-        BlockingQueue<String> queueRead = new LinkedBlockingQueue<>();
-        BlockingQueue<String> queueErrorMsg = new LinkedBlockingQueue<>();
+        List<File> listFile = new ListFile(folder).getListFile();
 
-        List<File> listFile = getListFile(new File("D:\\test"));
-        for (File file : listFile) {
-            new ReadFile(file,queueRead).start();
+        while (true){
+            List<File> updateOfListFile = new ListFile(folder).getListFile();
+
+            if(updateOfListFile.size() > listFile.size()){
+                for (File file : updateOfListFile) {
+                    if(!listFile.contains(file)){
+                       new FileCleanUp(file).start();
+                        listFile.add(file);
+                        System.out.println("1 File moi !");
+                    }
+                }
+            }
         }
-
-        new HandleMesseage(queueRead,queueErrorMsg).start();
-
-        new WriteToFile(queueErrorMsg, new FileWriter("D:\\error.txt")).start();
     }
 
-    private static List<File> getListFile(File folder){
-        if (folder.isFile()){
-            return Arrays.asList(folder);
+    private static class FileCleanUp extends Thread{
+        private File path;
+
+        public FileCleanUp(File path) {
+            this.path = path;
         }
 
-        BlockingQueue<File> fileQueue = new LinkedBlockingQueue<>();
-        Collections.addAll(fileQueue, folder.listFiles());
-        List<File> files = new ArrayList<>();
-        File file = null;
-        while ((file = fileQueue.poll()) != null){
-            if (file.isDirectory()){
-                fileQueue.addAll(Arrays.asList(file.listFiles()));
-                continue;
+        public void run() {
+            BlockingQueue<String> queueRead = new LinkedBlockingQueue<>();
+            BlockingQueue<String> queueErrorMsg = new LinkedBlockingQueue<>();
+
+            List<File> listFile = new ListFile(path).getListFile();
+            for (File file : listFile) {
+                new ReadFile(file,queueRead).start();
             }
-            files.add(file);
+
+            new HandleMesseage(queueRead,queueErrorMsg).start();
+
+            try {
+                new WriteToFile(queueErrorMsg, new FileWriter("D:\\error.txt",true)).start();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-        return files;
     }
 }

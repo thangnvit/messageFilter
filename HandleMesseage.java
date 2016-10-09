@@ -17,14 +17,14 @@ public class HandleMesseage extends Thread {
         public void run() {
             try {
                 while (true) {
-                    String s = queueRead.take();
-                    if (s.equals("Exit")) {
+                    String line = queueRead.take();
+                    if (line.equals("Exit")) {
                         queueRead.put("Exit");
                         queueWrite.put("Exit");
                         break;
                     }
-                    if(!(s.startsWith("84") || s.startsWith("084")) || s.contains("fuck")){
-                        queueWrite.put(s);
+                    if(!(line.startsWith("84") || line.startsWith("084")) || line.contains("fuck")){
+                        queueWrite.put(line);
                     }
                 }
             } catch (InterruptedException e) {
